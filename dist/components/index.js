@@ -104,8 +104,107 @@ function initNavArrow() {
     item.addEventListener("mouseleave", hideArrow)
   })
 }
+
+function initMarkLines() {
+  var targets = document.querySelectorAll("[data-edge]")
+  if (targets.length === 0) return
+
+  var layer = document.querySelector(".mark-line-layer")
+  if (!layer) {
+    layer = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+    layer.setAttribute("class", "mark-line-layer")
+    layer.style.position = "fixed"
+    layer.style.inset = "0"
+    layer.style.width = "100vw"
+    layer.style.height = "100vh"
+    layer.style.pointerEvents = "none"
+    layer.style.zIndex = "80"
+    layer.style.overflow = "visible"
+    document.body.appendChild(layer)
+  }
+  layer.innerHTML = ""
+
+  var path = document.createElementNS("http://www.w3.org/2000/svg", "path")
+  path.setAttribute("fill", "none")
+  path.setAttribute("stroke", "#8c2f22")
+  path.setAttribute("stroke-width", "2.2")
+  path.setAttribute("stroke-linecap", "round")
+  path.setAttribute("filter", "url(#pencil)")
+  path.style.opacity = "0"
+  layer.appendChild(path)
+
+  var letter = document.createElementNS("http://www.w3.org/2000/svg", "text")
+  letter.setAttribute("font-family", "Doodlefont, cursive")
+  letter.setAttribute("font-size", "64")
+  letter.setAttribute("text-anchor", "middle")
+  letter.setAttribute("dominant-baseline", "middle")
+  letter.style.opacity = "0"
+  layer.appendChild(letter)
+
+  var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+  var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
+
+  function edgePoint(kind, rect) {
+    if (kind === "top-left") return { x: 50, y: 40 }
+    if (kind === "top-right") return { x: window.innerWidth - 50, y: 40 }
+    if (kind === "left") return { x: 30, y: rect.top + rect.height / 2 }
+    if (kind === "right") return { x: window.innerWidth - 30, y: rect.top + rect.height / 2 }
+    return { x: rect.left, y: rect.top }
+  }
+
+  function drawLine(target) {
+    var rect = target.getBoundingClientRect()
+    var x1 = rect.left + rect.width / 2
+    var y1 = rect.top + rect.height / 2
+    var end = edgePoint(target.dataset.edge, rect)
+    var x2 = end.x
+    var y2 = end.y
+    var midX = (x1 + x2) / 2 + (Math.random() * 30 - 15)
+    var midY = (y1 + y2) / 2 + (Math.random() * 30 - 15)
+    var d = "M" + x1 + "," + y1 + " Q" + midX + "," + midY + " " + x2 + "," + y2
+    path.setAttribute("d", d)
+    var len = path.getTotalLength()
+    path.style.transition = "none"
+    path.style.strokeDasharray = String(len)
+    path.style.strokeDashoffset = String(len)
+    path.getBoundingClientRect()
+    path.style.transition = "stroke-dashoffset 0.45s ease, opacity 0.2s ease"
+    path.style.opacity = "0.85"
+    path.style.strokeDashoffset = "0"
+
+    var chosenLetter = letterPool[Math.floor(Math.random() * letterPool.length)]
+    var chosenColor = colorPool[Math.floor(Math.random() * colorPool.length)]
+    var angle = Math.random() * 50 - 25
+    letter.textContent = chosenLetter
+    letter.setAttribute("fill", chosenColor)
+    letter.setAttribute("x", String(x2))
+    letter.setAttribute("y", String(y2))
+    letter.setAttribute("transform", "rotate(" + angle + " " + x2 + " " + y2 + ")")
+    letter.style.transition = "none"
+    letter.style.opacity = "0"
+    letter.getBoundingClientRect()
+    letter.style.transition = "opacity 0.3s ease 0.25s"
+    letter.style.opacity = "0.9"
+  }
+
+  function hideLine() {
+    path.style.opacity = "0"
+    letter.style.transition = "opacity 0.15s ease"
+    letter.style.opacity = "0"
+  }
+
+  targets.forEach(function (item) {
+    if (item.dataset.lineBound) return
+    item.dataset.lineBound = "1"
+    item.addEventListener("mouseenter", function () { drawLine(item) })
+    item.addEventListener("mouseleave", hideLine)
+  })
+}
+
 document.addEventListener("nav", initNavArrow)
 document.addEventListener("render", initNavArrow)
+document.addEventListener("nav", initMarkLines)
+document.addEventListener("render", initMarkLines)
 `;
 var NavArrow = () => null;
 NavArrow.afterDOMLoaded = navArrowScript;
