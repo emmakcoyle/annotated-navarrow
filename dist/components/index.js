@@ -106,7 +106,7 @@ function initNavArrow() {
 }
 
 function initMarkLines() {
-  var targets = document.querySelectorAll("[data-edge]")
+  var targets = document.querySelectorAll("[data-edge-x]")
   if (targets.length === 0) return
 
   var layer = document.querySelector(".mark-line-layer")
@@ -144,19 +144,19 @@ function initMarkLines() {
   var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
 
-  function edgePoint(kind, rect) {
-    if (kind === "top-left") return { x: 50, y: 40 }
-    if (kind === "top-right") return { x: window.innerWidth - 50, y: 40 }
-    if (kind === "left") return { x: 30, y: rect.top + rect.height / 2 }
-    if (kind === "right") return { x: window.innerWidth - 30, y: rect.top + rect.height / 2 }
-    return { x: rect.left, y: rect.top }
+  function edgePoint(target) {
+    var xPct = parseFloat(target.dataset.edgeX)
+    var yPct = parseFloat(target.dataset.edgeY)
+    if (isNaN(xPct)) xPct = 50
+    if (isNaN(yPct)) yPct = 50
+    return { x: (xPct / 100) * window.innerWidth, y: (yPct / 100) * window.innerHeight }
   }
 
   function drawLine(target) {
     var rect = target.getBoundingClientRect()
     var x1 = rect.left + rect.width / 2
     var y1 = rect.top + rect.height / 2
-    var end = edgePoint(target.dataset.edge, rect)
+    var end = edgePoint(target)
     var x2 = end.x
     var y2 = end.y
     var midX = (x1 + x2) / 2 + (Math.random() * 30 - 15)
@@ -176,7 +176,9 @@ function initMarkLines() {
     var chosenColor = colorPool[Math.floor(Math.random() * colorPool.length)]
     var angle = Math.random() * 50 - 25
     letter.textContent = chosenLetter
-    letter.setAttribute("fill", chosenColor)
+    letter.removeAttribute("fill")
+    letter.style.removeProperty("fill")
+    letter.style.setProperty("fill", chosenColor, "important")
     letter.setAttribute("x", String(x2))
     letter.setAttribute("y", String(y2))
     letter.setAttribute("transform", "rotate(" + angle + " " + x2 + " " + y2 + ")")
