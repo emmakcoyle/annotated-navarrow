@@ -1,14 +1,14 @@
 {
-  "name": "@quartz-community/plugin-template",
+  "name": "annotated-navarrow",
   "version": "0.1.0",
-  "description": "Template repository for Quartz community plugins.",
+  "description": "Draws a hand-sketched arrow from the site wordmark to a hovered nav link.",
   "type": "module",
   "license": "MIT",
   "author": "Quartz Community",
   "homepage": "https://quartz.jzhao.xyz",
   "repository": {
     "type": "git",
-    "url": "https://github.com/quartz-community/plugin-template"
+    "url": "https://github.com/emmakcoyle/annotated-navarrow"
   },
   "keywords": [
     "quartz",
@@ -94,9 +94,9 @@
     "vitest": "^2.1.9"
   },
   "quartz": {
-    "name": "plugin-template",
-    "displayName": "Plugin Template",
-    "category": "transformer",
+    "name": "annotated-navarrow",
+    "displayName": "Nav Arrow",
+    "category": "component",
     "version": "1.0.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [],
@@ -114,10 +114,10 @@
       }
     },
     "components": {
-      "ExampleComponent": {
-        "displayName": "Example Component",
-        "defaultPosition": "right",
-        "defaultPriority": 50
+      "NavArrow": {
+        "displayName": "Nav Arrow",
+        "defaultPosition": "afterBody",
+        "defaultPriority": 1
       }
     }
   },

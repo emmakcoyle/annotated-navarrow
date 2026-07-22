@@ -159,8 +159,8 @@ function looksLikeANode(value) {
 }
 
 // node_modules/unist-util-visit-parents/lib/color.node.js
-function color(d2) {
-  return "\x1B[33m" + d2 + "\x1B[39m";
+function color(d) {
+  return "\x1B[33m" + d + "\x1B[39m";
 }
 
 // node_modules/unist-util-visit-parents/lib/index.js
@@ -1684,8 +1684,8 @@ var phrasing = (
 
 // node_modules/mdast-util-to-markdown/lib/handle/root.js
 function root(node2, _, state, info) {
-  const hasPhrasing = node2.children.some(function(d2) {
-    return phrasing(d2);
+  const hasPhrasing = node2.children.some(function(d) {
+    return phrasing(d);
   });
   const container = hasPhrasing ? state.containerPhrasing : state.containerFlow;
   return container.call(state, node2, info);
@@ -1811,8 +1811,8 @@ function enterTable(token) {
   this.enter(
     {
       type: "table",
-      align: align.map(function(d2) {
-        return d2 === "none" ? null : d2;
+      align: align.map(function(d) {
+        return d === "none" ? null : d;
       }),
       children: []
     },
@@ -2900,8 +2900,8 @@ var EditMap = class {
    * @returns {undefined}
    */
   consume(events) {
-    this.map.sort(function(a2, b) {
-      return a2[0] - b[0];
+    this.map.sort(function(a, b) {
+      return a[0] - b[0];
     });
     if (this.map.length === 0) {
       return;
@@ -3323,9 +3323,9 @@ function flushCell(map3, context, range, rowKind, rowEnd, previousCell) {
       start[1].type = "chunkText";
       start[1].contentType = "text";
       if (range[3] > range[2] + 1) {
-        const a2 = range[2] + 1;
+        const a = range[2] + 1;
         const b = range[3] - range[2] - 1;
-        map3.add(a2, b, []);
+        map3.add(a, b, []);
       }
     }
     map3.add(range[3] + 1, 0, [["exit", valueToken, context]]);
@@ -3730,50 +3730,81 @@ var ExampleEmitter = (userOptions) => {
   };
 };
 
-// node_modules/@quartz-community/utils/dist/lang.js
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+// src/components/NavArrow.tsx
+var navArrowScript = `
+function initNavArrow() {
+  var wordmark = document.querySelector(".masthead")
+  var navLinks = document.querySelectorAll(".wrap nav a")
+  if (!wordmark || navLinks.length === 0) return
 
-// src/components/styles/example.scss
-var example_default = ".example-component {\n  padding: 8px 16px;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n  border-radius: 4px;\n  font-weight: 600;\n  display: inline-block;\n}";
+  var wrap = wordmark.closest(".wrap")
+  if (!wrap) return
 
-// src/components/scripts/example.inline.ts
-var example_inline_default = 'function l(){let e=window.location.pathname;return e.startsWith("/")&&(e=e.slice(1)),e.endsWith("/")&&(e=e.slice(0,-1)),e||"index"}function r(){let e=document.querySelectorAll(".example-component");if(e.length===0)return;let t=[];function o(n){(n.ctrlKey||n.metaKey)&&n.shiftKey&&n.key.toLowerCase()==="e"&&(n.preventDefault(),console.log("[ExampleComponent] Keyboard shortcut triggered!"))}document.addEventListener("keydown",o),t.push(()=>document.removeEventListener("keydown",o));for(let n of e){let i=()=>{console.log("[ExampleComponent] Clicked!")};n.addEventListener("click",i),t.push(()=>n.removeEventListener("click",i))}typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{t.forEach(n=>n())}),console.log("[ExampleComponent] Initialized with",e.length,"component(s)")}document.addEventListener("nav",e=>{let t=e.detail?.url||l();console.log("[ExampleComponent] Navigation to:",t),r()});document.addEventListener("render",()=>{console.log("[ExampleComponent] Render event - re-initializing"),r()});document.addEventListener("prenav",()=>{let e=document.querySelector(".example-component");e&&sessionStorage.setItem("exampleScrollTop",e.scrollTop?.toString()||"0")});\n';
-var l;
-l = { __e: function(n2, l2, u3, t2) {
-  for (var i2, o2, r2; l2 = l2.__; ) if ((i2 = l2.__c) && !i2.__) try {
-    if ((o2 = i2.constructor) && null != o2.getDerivedStateFromError && (i2.setState(o2.getDerivedStateFromError(n2)), r2 = i2.__d), null != i2.componentDidCatch && (i2.componentDidCatch(n2, t2 || {}), r2 = i2.__d), r2) return i2.__E = i2;
-  } catch (l3) {
-    n2 = l3;
+  var layer = wrap.querySelector(".header-arrow-layer")
+  if (!layer) {
+    layer = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+    layer.setAttribute("class", "header-arrow-layer")
+    layer.style.position = "absolute"
+    layer.style.inset = "0"
+    layer.style.width = "100%"
+    layer.style.height = "100%"
+    layer.style.pointerEvents = "none"
+    layer.style.zIndex = "2"
+    layer.style.overflow = "visible"
+    wrap.style.position = "relative"
+    wrap.appendChild(layer)
   }
-  throw n2;
-} }, "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout;
+  layer.innerHTML = ""
 
-// node_modules/preact/jsx-runtime/dist/jsxRuntime.mjs
-var f2 = 0;
-function u2(e2, t2, n2, o2, i2, u3) {
-  t2 || (t2 = {});
-  var a2, c2, p2 = t2;
-  if ("ref" in p2) for (c2 in p2 = {}, t2) "ref" == c2 ? a2 = t2[c2] : p2[c2] = t2[c2];
-  var l2 = { type: e2, props: p2, key: n2, ref: a2, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f2, __i: -1, __u: 0, __source: i2, __self: u3 };
-  return l.vnode && l.vnode(l2), l2;
+  var path = document.createElementNS("http://www.w3.org/2000/svg", "path")
+  path.setAttribute("fill", "none")
+  path.setAttribute("stroke", "#8c2f22")
+  path.setAttribute("stroke-width", "2.2")
+  path.setAttribute("stroke-linecap", "round")
+  path.setAttribute("filter", "url(#pencil)")
+  path.style.opacity = "0"
+  layer.appendChild(path)
+
+  function drawArrow(target) {
+    var wrapRect = wrap.getBoundingClientRect()
+    var wRect = wordmark.getBoundingClientRect()
+    var tRect = target.getBoundingClientRect()
+    var x1 = wRect.left + wRect.width / 2 - wrapRect.left
+    var y1 = wRect.bottom - wrapRect.top - 2
+    var x2 = tRect.left + tRect.width / 2 - wrapRect.left
+    var y2 = tRect.top - wrapRect.top - 4
+    var midX = (x1 + x2) / 2 + (Math.random() * 16 - 8)
+    var midY = (y1 + y2) / 2 + 10
+    var d = "M" + x1 + "," + y1 + " Q" + midX + "," + midY + " " + x2 + "," + y2
+    path.setAttribute("d", d)
+    var len = path.getTotalLength()
+    path.style.transition = "none"
+    path.style.strokeDasharray = String(len)
+    path.style.strokeDashoffset = String(len)
+    path.getBoundingClientRect()
+    path.style.transition = "stroke-dashoffset 0.45s ease, opacity 0.2s ease"
+    path.style.opacity = "0.85"
+    path.style.strokeDashoffset = "0"
+  }
+
+  function hideArrow() {
+    path.style.opacity = "0"
+  }
+
+  navLinks.forEach(function (item) {
+    if (item.dataset.arrowBound) return
+    item.dataset.arrowBound = "1"
+    item.addEventListener("mouseenter", function () { drawArrow(item) })
+    item.addEventListener("mouseleave", hideArrow)
+  })
 }
+document.addEventListener("nav", initNavArrow)
+document.addEventListener("render", initNavArrow)
+`;
+var NavArrow = () => null;
+NavArrow.afterDOMLoaded = navArrowScript;
+var NavArrow_default = (() => NavArrow);
 
-// src/components/ExampleComponent.tsx
-var ExampleComponent_default = ((opts) => {
-  const { prefix = "", suffix = "", className = "example-component" } = opts ?? {};
-  const Component = (props) => {
-    const frontmatter = props.fileData?.frontmatter;
-    const title = frontmatter?.title ?? "Untitled";
-    const fullText = `${prefix}${title}${suffix}`;
-    return /* @__PURE__ */ u2("div", { class: classNames(className), children: fullText });
-  };
-  Component.css = example_default;
-  Component.afterDOMLoaded = example_inline_default;
-  return Component;
-});
-
-export { ExampleComponent_default as ExampleComponent, ExampleEmitter, ExampleFilter, ExampleTransformer };
+export { ExampleEmitter, ExampleFilter, ExampleTransformer, NavArrow_default as NavArrow };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

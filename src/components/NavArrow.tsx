@@ -1,9 +1,6 @@
-import { createRequire } from 'module';
+import type { QuartzComponent, QuartzComponentConstructor } from "@quartz-community/types"
 
-createRequire(import.meta.url);
-
-// src/components/NavArrow.tsx
-var navArrowScript = `
+const navArrowScript = `
 function initNavArrow() {
   var wordmark = document.querySelector(".masthead")
   var navLinks = document.querySelectorAll(".wrap nav a")
@@ -72,11 +69,9 @@ function initNavArrow() {
 }
 document.addEventListener("nav", initNavArrow)
 document.addEventListener("render", initNavArrow)
-`;
-var NavArrow = () => null;
-NavArrow.afterDOMLoaded = navArrowScript;
-var NavArrow_default = (() => NavArrow);
+`
 
-export { NavArrow_default as NavArrow };
-//# sourceMappingURL=index.js.map
-//# sourceMappingURL=index.js.map
+const NavArrow: QuartzComponent = () => null
+NavArrow.afterDOMLoaded = navArrowScript
+
+export default (() => NavArrow) satisfies QuartzComponentConstructor
