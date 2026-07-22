@@ -37,6 +37,17 @@ function initNavArrow() {
   path.style.opacity = "0"
   layer.appendChild(path)
 
+  var circleA = document.createElementNS("http://www.w3.org/2000/svg", "ellipse")
+  var circleB = document.createElementNS("http://www.w3.org/2000/svg", "ellipse")
+  ;[circleA, circleB].forEach(function (c) {
+    c.setAttribute("fill", "none")
+    c.setAttribute("stroke", "#8c2f22")
+    c.setAttribute("stroke-width", "2")
+    c.setAttribute("filter", "url(#pencil)")
+    c.style.opacity = "0"
+    layer.appendChild(c)
+  })
+
   function drawArrow(target) {
     var wrapRect = wrap.getBoundingClientRect()
     var wRect = wordmark.getBoundingClientRect()
@@ -57,10 +68,33 @@ function initNavArrow() {
     path.style.transition = "stroke-dashoffset 0.45s ease, opacity 0.2s ease"
     path.style.opacity = "0.85"
     path.style.strokeDashoffset = "0"
+
+    var cx = x2
+    var cy = tRect.top + tRect.height / 2 - wrapRect.top
+    var rx = tRect.width / 2 + 12
+    var ry = tRect.height / 2 + 9
+    circleA.setAttribute("cx", cx)
+    circleA.setAttribute("cy", cy)
+    circleA.setAttribute("rx", rx)
+    circleA.setAttribute("ry", ry)
+    circleA.setAttribute("transform", "rotate(-3 " + cx + " " + cy + ")")
+    circleB.setAttribute("cx", cx + 2)
+    circleB.setAttribute("cy", cy - 1)
+    circleB.setAttribute("rx", rx - 3)
+    circleB.setAttribute("ry", ry - 2.5)
+    circleB.setAttribute("transform", "rotate(4 " + cx + " " + cy + ")")
+    circleA.style.transition = "opacity 0.25s ease 0.3s"
+    circleB.style.transition = "opacity 0.25s ease 0.38s"
+    circleA.style.opacity = "0.8"
+    circleB.style.opacity = "0.6"
   }
 
   function hideArrow() {
     path.style.opacity = "0"
+    circleA.style.transition = "opacity 0.15s ease"
+    circleB.style.transition = "opacity 0.15s ease"
+    circleA.style.opacity = "0"
+    circleB.style.opacity = "0"
   }
 
   navLinks.forEach(function (item) {
