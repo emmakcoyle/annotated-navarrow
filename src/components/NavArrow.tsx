@@ -331,7 +331,7 @@ function initTitleMark() {
     var ref = document.querySelector(".pencil-rule-mini")
     if (ref && ref.src) return ref.src.replace(/[^/]+$/, "")
     var slug = document.body.getAttribute("data-slug") || ""
-    var prefix = /^(kind|mode|grid)\//.test(slug) ? "../" : "./"
+    var prefix = /^(kind|mode|grid)\\//.test(slug) ? "../" : "./"
     return new URL(prefix + "static/", document.baseURI).href
   }
 
