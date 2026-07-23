@@ -232,7 +232,7 @@ function initTitleLines() {
   }
 
   function showLines(target) {
-    var count = parseInt(target.dataset.edgeMulti, 10) || 3
+    var count = 3 + Math.floor(Math.random() * 5)
     var rect = target.getBoundingClientRect()
     var group = document.createElementNS("http://www.w3.org/2000/svg", "g")
 
