@@ -3952,17 +3952,45 @@ function initTitleLines() {
   var letterPool = "abcdefghijklmnopqrstuvwxyz".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
 
-  function edgeOriginPoint(rect, side) {
-    var t = 0.15 + 0.7 * Math.random()
-    return { x: side === -1 ? rect.left : rect.right, y: rect.top + rect.height * t }
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1))
+      var tmp = arr[i]
+      arr[i] = arr[j]
+      arr[j] = tmp
+    }
+    return arr
   }
 
-  function outwardPoint(origin, side) {
-    var dist = 50 + Math.random() * 30
-    return {
-      x: origin.x + side * dist,
-      y: origin.y + (Math.random() * 24 - 12)
+  function buildLine(edge, rect, t, dist) {
+    var x1, y1, x2, y2
+
+    if (edge === "left") {
+      x1 = rect.left
+      y1 = rect.top + rect.height * t
+      x2 = x1 - dist
+      y2 = y1 + (Math.random() * 24 - 12)
+    } else if (edge === "right") {
+      x1 = rect.right
+      y1 = rect.top + rect.height * t
+      x2 = x1 + dist
+      y2 = y1 + (Math.random() * 24 - 12)
+    } else if (edge === "top") {
+      x1 = rect.left + rect.width * t
+      y1 = rect.top
+      var margin = 14
+      var maxUp = Math.max(y1 - margin, 10)
+      var cappedDist = Math.min(dist, maxUp)
+      y2 = y1 - cappedDist
+      x2 = x1 + (Math.random() * 24 - 12)
+    } else {
+      x1 = rect.left + rect.width * t
+      y1 = rect.bottom
+      y2 = y1 + dist
+      x2 = x1 + (Math.random() * 24 - 12)
     }
+
+    return { x1: x1, y1: y1, x2: x2, y2: y2 }
   }
 
   function showLines(target) {
@@ -3970,17 +3998,45 @@ function initTitleLines() {
     var rect = target.getBoundingClientRect()
     var group = document.createElementNS("http://www.w3.org/2000/svg", "g")
 
+    var edgePool = ["left", "right", "top", "bottom"]
+    var edges = []
+    for (var e = 0; e < count; e++) {
+      if (e % edgePool.length === 0) shuffle(edgePool)
+      edges.push(edgePool[e % edgePool.length])
+    }
+
+    var minDist = 55
+    var maxDist = 165
+    var lengths = []
+    for (var li = 0; li < count; li++) {
+      var base = count === 1 ? minDist : minDist + (maxDist - minDist) * (li / (count - 1))
+      lengths.push(base + (Math.random() * 10 - 5))
+    }
+    shuffle(lengths)
+
     for (var i = 0; i < count; i++) {
-      var side = Math.random() < 0.5 ? -1 : 1
-      var origin = edgeOriginPoint(rect, side)
-      var end = outwardPoint(origin, side)
-      var x1 = origin.x
-      var y1 = origin.y
-      var midX = (x1 + end.x) / 2 + (Math.random() * 6 - 3)
-      var midY = (y1 + end.y) / 2 + (Math.random() * 6 - 3)
+      var edge = edges[i]
+      var sameEdgeIndex = 0
+      var sameEdgeCount = 0
+      for (var k = 0; k < count; k++) {
+        if (edges[k] === edge) {
+          if (k === i) sameEdgeIndex = sameEdgeCount
+          sameEdgeCount++
+        }
+      }
+      var slotWidth = 0.7 / sameEdgeCount
+      var t = 0.15 + slotWidth * sameEdgeIndex + slotWidth * (0.2 + 0.6 * Math.random())
+
+      var pts = buildLine(edge, rect, t, lengths[i])
+      var x1 = pts.x1
+      var y1 = pts.y1
+      var x2 = pts.x2
+      var y2 = pts.y2
+      var midX = (x1 + x2) / 2 + (Math.random() * 6 - 3)
+      var midY = (y1 + y2) / 2 + (Math.random() * 6 - 3)
 
       var path = document.createElementNS("http://www.w3.org/2000/svg", "path")
-      path.setAttribute("d", "M" + x1 + "," + y1 + " Q" + midX + "," + midY + " " + end.x + "," + end.y)
+      path.setAttribute("d", "M" + x1 + "," + y1 + " Q" + midX + "," + midY + " " + x2 + "," + y2)
       path.setAttribute("fill", "none")
       path.setAttribute("stroke", "#8c2f22")
       path.setAttribute("stroke-width", "1.4")
@@ -3997,9 +4053,9 @@ function initTitleLines() {
       letter.setAttribute("font-size", "56")
       letter.setAttribute("text-anchor", "middle")
       letter.setAttribute("dominant-baseline", "middle")
-      letter.setAttribute("x", String(end.x))
-      letter.setAttribute("y", String(end.y))
-      letter.setAttribute("transform", "rotate(" + angle + " " + end.x + " " + end.y + ")")
+      letter.setAttribute("x", String(x2))
+      letter.setAttribute("y", String(y2))
+      letter.setAttribute("transform", "rotate(" + angle + " " + x2 + " " + y2 + ")")
       letter.style.setProperty("fill", chosenColor, "important")
       letter.style.opacity = "0"
       group.appendChild(letter)
