@@ -143,6 +143,7 @@ function initMarkLines() {
 
   var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
+  var activeTarget = null
 
   function edgePoint(target) {
     var xPct = parseFloat(target.dataset.edgeX)
@@ -153,6 +154,7 @@ function initMarkLines() {
   }
 
   function drawLine(target) {
+    activeTarget = target
     var rect = target.getBoundingClientRect()
     var x1 = rect.left + rect.width / 2
     var y1 = rect.top + rect.height / 2
@@ -190,6 +192,7 @@ function initMarkLines() {
   }
 
   function hideLine() {
+    activeTarget = null
     path.style.opacity = "0"
     letter.style.transition = "opacity 0.15s ease"
     letter.style.opacity = "0"
@@ -201,6 +204,14 @@ function initMarkLines() {
     item.addEventListener("mouseenter", function () { drawLine(item) })
     item.addEventListener("mouseleave", hideLine)
   })
+
+  if (layer._scrollHandler) {
+    window.removeEventListener("scroll", layer._scrollHandler)
+  }
+  layer._scrollHandler = function () {
+    if (activeTarget) hideLine()
+  }
+  window.addEventListener("scroll", layer._scrollHandler, { passive: true })
 }
 
 function initTitleLines() {
@@ -223,6 +234,7 @@ function initTitleLines() {
 
   var letterPool = "abcdefghijklmnopqrstuvwxyz".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
+  var activeTarget = null
 
   function shuffle(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
@@ -235,6 +247,7 @@ function initTitleLines() {
   }
 
   function showLines(target) {
+    activeTarget = target
     var count = 3 + Math.floor(Math.random() * 5)
     var rect = target.getBoundingClientRect()
     var group = document.createElementNS("http://www.w3.org/2000/svg", "g")
@@ -247,7 +260,7 @@ function initTitleLines() {
     var sector = (Math.PI * 2) / count
     var angles = []
     for (var a = 0; a < count; a++) {
-      var jitter = (Math.random() - 0.5) * sector * 0.6
+      var jitter = (Math.random() - 0.5) * sector * 0.92
       angles.push(a * sector + jitter)
     }
 
@@ -326,6 +339,7 @@ function initTitleLines() {
   }
 
   function hideLines(target) {
+    activeTarget = null
     var group = target._lineGroup
     if (!group) return
     var els = group.querySelectorAll("path, text")
@@ -345,6 +359,14 @@ function initTitleLines() {
     item.addEventListener("mouseenter", function () { showLines(item) })
     item.addEventListener("mouseleave", function () { hideLines(item) })
   })
+
+  if (layer._scrollHandler) {
+    window.removeEventListener("scroll", layer._scrollHandler)
+  }
+  layer._scrollHandler = function () {
+    if (activeTarget) hideLines(activeTarget)
+  }
+  window.addEventListener("scroll", layer._scrollHandler, { passive: true })
 }
 
 function initTitleMark() {
@@ -380,16 +402,22 @@ function initTitleMark() {
     return new URL(prefix + "static/", document.baseURI).href
   }
 
-  var img = document.createElement("img")
-  img.className = "title-mark-overlay"
-  img.style.position = "fixed"
-  img.style.pointerEvents = "none"
-  img.style.zIndex = "78"
-  img.style.opacity = "0"
-  img.style.transition = "opacity 0.2s ease"
-  document.body.appendChild(img)
+  var img = document.querySelector(".title-mark-overlay")
+  if (!img) {
+    img = document.createElement("img")
+    img.className = "title-mark-overlay"
+    img.style.position = "fixed"
+    img.style.pointerEvents = "none"
+    img.style.zIndex = "78"
+    img.style.opacity = "0"
+    img.style.transition = "opacity 0.2s ease"
+    document.body.appendChild(img)
+  }
+
+  var activeTarget = null
 
   function showMark(target) {
+    activeTarget = target
     var rect = target.getBoundingClientRect()
     var base = staticBase()
     var chosen = markPool[Math.floor(Math.random() * markPool.length)]
@@ -424,6 +452,7 @@ function initTitleMark() {
   }
 
   function hideMark() {
+    activeTarget = null
     img.style.transition = "opacity 0.15s ease"
     img.style.opacity = "0"
   }
@@ -434,6 +463,14 @@ function initTitleMark() {
     item.addEventListener("mouseenter", function () { showMark(item) })
     item.addEventListener("mouseleave", hideMark)
   })
+
+  if (img._scrollHandler) {
+    window.removeEventListener("scroll", img._scrollHandler)
+  }
+  img._scrollHandler = function () {
+    if (activeTarget) hideMark()
+  }
+  window.addEventListener("scroll", img._scrollHandler, { passive: true })
 }
 
 document.addEventListener("nav", initNavArrow)
