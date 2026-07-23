@@ -3962,47 +3962,21 @@ function initTitleLines() {
     return arr
   }
 
-  function buildLine(edge, rect, t, dist) {
-    var x1, y1, x2, y2
-
-    if (edge === "left") {
-      x1 = rect.left
-      y1 = rect.top + rect.height * t
-      x2 = x1 - dist
-      y2 = y1 + (Math.random() * 24 - 12)
-    } else if (edge === "right") {
-      x1 = rect.right
-      y1 = rect.top + rect.height * t
-      x2 = x1 + dist
-      y2 = y1 + (Math.random() * 24 - 12)
-    } else if (edge === "top") {
-      x1 = rect.left + rect.width * t
-      y1 = rect.top
-      var margin = 14
-      var maxUp = Math.max(y1 - margin, 10)
-      var cappedDist = Math.min(dist, maxUp)
-      y2 = y1 - cappedDist
-      x2 = x1 + (Math.random() * 24 - 12)
-    } else {
-      x1 = rect.left + rect.width * t
-      y1 = rect.bottom
-      y2 = y1 + dist
-      x2 = x1 + (Math.random() * 24 - 12)
-    }
-
-    return { x1: x1, y1: y1, x2: x2, y2: y2 }
-  }
-
   function showLines(target) {
     var count = parseInt(target.dataset.edgeMulti, 10) || 3
     var rect = target.getBoundingClientRect()
     var group = document.createElementNS("http://www.w3.org/2000/svg", "g")
 
-    var edgePool = ["left", "right", "top", "bottom"]
-    var edges = []
-    for (var e = 0; e < count; e++) {
-      if (e % edgePool.length === 0) shuffle(edgePool)
-      edges.push(edgePool[e % edgePool.length])
+    var cx = rect.left + rect.width / 2
+    var cy = rect.top + rect.height / 2
+    var rx = rect.width / 2 + 6
+    var ry = rect.height / 2 + 8
+
+    var sector = (Math.PI * 2) / count
+    var angles = []
+    for (var a = 0; a < count; a++) {
+      var jitter = (Math.random() - 0.5) * sector * 0.6
+      angles.push(a * sector + jitter)
     }
 
     var minDist = 55
@@ -4015,23 +3989,24 @@ function initTitleLines() {
     shuffle(lengths)
 
     for (var i = 0; i < count; i++) {
-      var edge = edges[i]
-      var sameEdgeIndex = 0
-      var sameEdgeCount = 0
-      for (var k = 0; k < count; k++) {
-        if (edges[k] === edge) {
-          if (k === i) sameEdgeIndex = sameEdgeCount
-          sameEdgeCount++
+      var theta = angles[i]
+      var ux = Math.cos(theta)
+      var uy = Math.sin(theta)
+      var x1 = cx + ux * rx
+      var y1 = cy + uy * ry
+      var dist = lengths[i]
+
+      if (uy < -0.2) {
+        var margin = 14
+        var vertReach = Math.abs(uy) * dist
+        var maxUpReach = Math.max(y1 - margin, 10)
+        if (vertReach > maxUpReach) {
+          dist = maxUpReach / Math.abs(uy)
         }
       }
-      var slotWidth = 0.7 / sameEdgeCount
-      var t = 0.15 + slotWidth * sameEdgeIndex + slotWidth * (0.2 + 0.6 * Math.random())
 
-      var pts = buildLine(edge, rect, t, lengths[i])
-      var x1 = pts.x1
-      var y1 = pts.y1
-      var x2 = pts.x2
-      var y2 = pts.y2
+      var x2 = x1 + ux * dist
+      var y2 = y1 + uy * dist
       var midX = (x1 + x2) / 2 + (Math.random() * 6 - 3)
       var midY = (y1 + y2) / 2 + (Math.random() * 6 - 3)
 
