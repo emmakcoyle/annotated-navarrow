@@ -221,28 +221,26 @@ function initTitleLines() {
   var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
 
-  function edgePointForSide() {
-    var side = Math.floor(Math.random() * 4)
-    var pad = 30
-    var w = window.innerWidth
-    var h = window.innerHeight
-    if (side === 0) return { x: pad + Math.random() * (w * 0.28), y: pad + Math.random() * (h - pad * 2) }
-    if (side === 1) return { x: w - pad - Math.random() * (w * 0.28), y: pad + Math.random() * (h - pad * 2) }
-    if (side === 2) return { x: pad + Math.random() * (w - pad * 2), y: pad + Math.random() * (h * 0.25) }
-    return { x: pad + Math.random() * (w - pad * 2), y: h - pad - Math.random() * (h * 0.25) }
+  function nearbyPoint(cx, cy, i, count) {
+    var baseAngle = (Math.PI * 2 * i) / count
+    var angle = baseAngle + (Math.random() * 0.5 - 0.25)
+    var dist = 22 + Math.random() * 20
+    return { x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist }
   }
 
   function showLines(target) {
     var count = parseInt(target.dataset.edgeMulti, 10) || 3
     var rect = target.getBoundingClientRect()
+    var cx = rect.left + rect.width / 2
+    var cy = rect.top + rect.height / 2
     var group = document.createElementNS("http://www.w3.org/2000/svg", "g")
 
     for (var i = 0; i < count; i++) {
       var x1 = rect.left + rect.width * (0.15 + 0.7 * Math.random())
       var y1 = rect.top + rect.height / 2
-      var end = edgePointForSide()
-      var midX = (x1 + end.x) / 2 + (Math.random() * 26 - 13)
-      var midY = (y1 + end.y) / 2 + (Math.random() * 26 - 13)
+      var end = nearbyPoint(cx, cy, i, count)
+      var midX = (x1 + end.x) / 2 + (Math.random() * 6 - 3)
+      var midY = (y1 + end.y) / 2 + (Math.random() * 6 - 3)
 
       var path = document.createElementNS("http://www.w3.org/2000/svg", "path")
       path.setAttribute("d", "M" + x1 + "," + y1 + " Q" + midX + "," + midY + " " + end.x + "," + end.y)
@@ -259,7 +257,7 @@ function initTitleLines() {
       var angle = Math.random() * 50 - 25
       letter.textContent = chosenLetter
       letter.setAttribute("font-family", "Doodlefont, cursive")
-      letter.setAttribute("font-size", "30")
+      letter.setAttribute("font-size", "18")
       letter.setAttribute("text-anchor", "middle")
       letter.setAttribute("dominant-baseline", "middle")
       letter.setAttribute("x", String(end.x))
@@ -309,12 +307,84 @@ function initTitleLines() {
   })
 }
 
+function initTitleMark() {
+  var targets = document.querySelectorAll("[data-edge-multi]")
+  if (targets.length === 0) return
+
+  var markPool = [
+    "underline-dash-gold.png",
+    "underline-thick-navy.png",
+    "underline-thin-green.png",
+    "underline-thin-sage.png",
+    "underline-zigzag-gold.png",
+    "underline-thick-gold.png",
+    "box-outline-green.png",
+    "box-outline-lavender.png",
+    "circle-oval-red.png",
+    "circle-knot-red.png",
+    "circle-knot-rust.png",
+    "scribble-hatch-magenta.png",
+    "scribble-rust.png"
+  ]
+
+  function staticBase() {
+    var ref = document.querySelector(".pencil-rule-mini")
+    if (ref && ref.src) return ref.src.replace(/[^/]+$/, "")
+    var slug = document.body.getAttribute("data-slug") || ""
+    var prefix = /^(kind|mode|grid)\//.test(slug) ? "../" : "./"
+    return new URL(prefix + "static/", document.baseURI).href
+  }
+
+  var img = document.createElement("img")
+  img.className = "title-mark-overlay"
+  img.style.position = "fixed"
+  img.style.pointerEvents = "none"
+  img.style.zIndex = "78"
+  img.style.opacity = "0"
+  img.style.transition = "opacity 0.2s ease"
+  document.body.appendChild(img)
+
+  function showMark(target) {
+    var rect = target.getBoundingClientRect()
+    var base = staticBase()
+    var chosen = markPool[Math.floor(Math.random() * markPool.length)]
+    var angle = Math.random() * 8 - 4
+    var padX = rect.width * 0.08
+    var padY = rect.height * 0.35
+    img.src = base + chosen
+    img.style.left = (rect.left - padX) + "px"
+    img.style.top = (rect.top - padY) + "px"
+    img.style.width = (rect.width + padX * 2) + "px"
+    img.style.height = (rect.height + padY * 2) + "px"
+    img.style.transform = "rotate(" + angle + "deg)"
+    img.style.transition = "none"
+    img.style.opacity = "0"
+    img.getBoundingClientRect()
+    img.style.transition = "opacity 0.25s ease"
+    img.style.opacity = "0.55"
+  }
+
+  function hideMark() {
+    img.style.transition = "opacity 0.15s ease"
+    img.style.opacity = "0"
+  }
+
+  targets.forEach(function (item) {
+    if (item.dataset.markBound) return
+    item.dataset.markBound = "1"
+    item.addEventListener("mouseenter", function () { showMark(item) })
+    item.addEventListener("mouseleave", hideMark)
+  })
+}
+
 document.addEventListener("nav", initNavArrow)
 document.addEventListener("render", initNavArrow)
 document.addEventListener("nav", initMarkLines)
 document.addEventListener("render", initMarkLines)
 document.addEventListener("nav", initTitleLines)
 document.addEventListener("render", initTitleLines)
+document.addEventListener("nav", initTitleMark)
+document.addEventListener("render", initTitleMark)
 `
 
 const NavArrow: QuartzComponent = () => null
