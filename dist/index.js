@@ -3869,7 +3869,7 @@ function initMarkLines() {
   letter.style.opacity = "0"
   layer.appendChild(letter)
 
-  var letterPool = "abcdefghijklmnopqrstuvwxyz".split("")
+  var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
 
   function edgePoint(target) {
@@ -3949,37 +3949,33 @@ function initTitleLines() {
     document.body.appendChild(layer)
   }
 
-  var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+  var letterPool = "abcdefghijklmnopqrstuvwxyz".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
 
-  function edgeOriginPoint(rect) {
-    var side = Math.floor(Math.random() * 4)
-    var t = Math.random()
-    if (side === 0) return { x: rect.left + rect.width * t, y: rect.top }
-    if (side === 1) return { x: rect.right, y: rect.top + rect.height * t }
-    if (side === 2) return { x: rect.left + rect.width * t, y: rect.bottom }
-    return { x: rect.left, y: rect.top + rect.height * t }
+  function edgeOriginPoint(rect, side) {
+    var t = 0.15 + 0.7 * Math.random()
+    return { x: side === -1 ? rect.left : rect.right, y: rect.top + rect.height * t }
   }
 
-  function nearbyPoint(cx, cy, i, count) {
-    var baseAngle = (Math.PI * 2 * i) / count
-    var angle = baseAngle + (Math.random() * 0.5 - 0.25)
+  function outwardPoint(origin, side) {
     var dist = 50 + Math.random() * 30
-    return { x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist }
+    return {
+      x: origin.x + side * dist,
+      y: origin.y + (Math.random() * 24 - 12)
+    }
   }
 
   function showLines(target) {
     var count = parseInt(target.dataset.edgeMulti, 10) || 3
     var rect = target.getBoundingClientRect()
-    var cx = rect.left + rect.width / 2
-    var cy = rect.top + rect.height / 2
     var group = document.createElementNS("http://www.w3.org/2000/svg", "g")
 
     for (var i = 0; i < count; i++) {
-      var origin = edgeOriginPoint(rect)
+      var side = Math.random() < 0.5 ? -1 : 1
+      var origin = edgeOriginPoint(rect, side)
+      var end = outwardPoint(origin, side)
       var x1 = origin.x
       var y1 = origin.y
-      var end = nearbyPoint(cx, cy, i, count)
       var midX = (x1 + end.x) / 2 + (Math.random() * 6 - 3)
       var midY = (y1 + end.y) / 2 + (Math.random() * 6 - 3)
 
@@ -3998,7 +3994,7 @@ function initTitleLines() {
       var angle = Math.random() * 50 - 25
       letter.textContent = chosenLetter
       letter.setAttribute("font-family", "Doodlefont, cursive")
-      letter.setAttribute("font-size", "28")
+      letter.setAttribute("font-size", "56")
       letter.setAttribute("text-anchor", "middle")
       letter.setAttribute("dominant-baseline", "middle")
       letter.setAttribute("x", String(end.x))
