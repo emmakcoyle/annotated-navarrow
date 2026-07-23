@@ -3931,10 +3931,121 @@ function initMarkLines() {
   })
 }
 
+function initTitleLines() {
+  var targets = document.querySelectorAll("[data-edge-multi]")
+  if (targets.length === 0) return
+
+  var layer = document.querySelector(".title-line-layer")
+  if (!layer) {
+    layer = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+    layer.setAttribute("class", "title-line-layer")
+    layer.style.position = "fixed"
+    layer.style.inset = "0"
+    layer.style.width = "100vw"
+    layer.style.height = "100vh"
+    layer.style.pointerEvents = "none"
+    layer.style.zIndex = "80"
+    layer.style.overflow = "visible"
+    document.body.appendChild(layer)
+  }
+
+  var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+  var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
+
+  function edgePointForSide() {
+    var side = Math.floor(Math.random() * 4)
+    var pad = 30
+    var w = window.innerWidth
+    var h = window.innerHeight
+    if (side === 0) return { x: pad + Math.random() * (w * 0.28), y: pad + Math.random() * (h - pad * 2) }
+    if (side === 1) return { x: w - pad - Math.random() * (w * 0.28), y: pad + Math.random() * (h - pad * 2) }
+    if (side === 2) return { x: pad + Math.random() * (w - pad * 2), y: pad + Math.random() * (h * 0.25) }
+    return { x: pad + Math.random() * (w - pad * 2), y: h - pad - Math.random() * (h * 0.25) }
+  }
+
+  function showLines(target) {
+    var count = parseInt(target.dataset.edgeMulti, 10) || 3
+    var rect = target.getBoundingClientRect()
+    var group = document.createElementNS("http://www.w3.org/2000/svg", "g")
+
+    for (var i = 0; i < count; i++) {
+      var x1 = rect.left + rect.width * (0.15 + 0.7 * Math.random())
+      var y1 = rect.top + rect.height / 2
+      var end = edgePointForSide()
+      var midX = (x1 + end.x) / 2 + (Math.random() * 26 - 13)
+      var midY = (y1 + end.y) / 2 + (Math.random() * 26 - 13)
+
+      var path = document.createElementNS("http://www.w3.org/2000/svg", "path")
+      path.setAttribute("d", "M" + x1 + "," + y1 + " Q" + midX + "," + midY + " " + end.x + "," + end.y)
+      path.setAttribute("fill", "none")
+      path.setAttribute("stroke", "#8c2f22")
+      path.setAttribute("stroke-width", "1.4")
+      path.setAttribute("filter", "url(#pencil)")
+      path.style.opacity = "0"
+      group.appendChild(path)
+
+      var letter = document.createElementNS("http://www.w3.org/2000/svg", "text")
+      var chosenLetter = letterPool[Math.floor(Math.random() * letterPool.length)]
+      var chosenColor = colorPool[Math.floor(Math.random() * colorPool.length)]
+      var angle = Math.random() * 50 - 25
+      letter.textContent = chosenLetter
+      letter.setAttribute("font-family", "Doodlefont, cursive")
+      letter.setAttribute("font-size", "30")
+      letter.setAttribute("text-anchor", "middle")
+      letter.setAttribute("dominant-baseline", "middle")
+      letter.setAttribute("x", String(end.x))
+      letter.setAttribute("y", String(end.y))
+      letter.setAttribute("transform", "rotate(" + angle + " " + end.x + " " + end.y + ")")
+      letter.style.setProperty("fill", chosenColor, "important")
+      letter.style.opacity = "0"
+      group.appendChild(letter)
+
+      ;(function (p, l, delay) {
+        var len = p.getTotalLength()
+        p.style.transition = "none"
+        p.style.strokeDasharray = String(len)
+        p.style.strokeDashoffset = String(len)
+        p.getBoundingClientRect()
+        p.style.transition = "stroke-dashoffset 0.4s ease " + delay + "s, opacity 0.2s ease " + delay + "s"
+        p.style.opacity = "0.8"
+        p.style.strokeDashoffset = "0"
+        l.style.transition = "opacity 0.3s ease " + (delay + 0.2) + "s"
+        l.style.opacity = "0.9"
+      })(path, letter, i * 0.08)
+    }
+
+    layer.appendChild(group)
+    target._lineGroup = group
+  }
+
+  function hideLines(target) {
+    var group = target._lineGroup
+    if (!group) return
+    var els = group.querySelectorAll("path, text")
+    els.forEach(function (el) {
+      el.style.transition = "opacity 0.15s ease"
+      el.style.opacity = "0"
+    })
+    setTimeout(function () {
+      if (group.parentNode) group.parentNode.removeChild(group)
+    }, 200)
+    target._lineGroup = null
+  }
+
+  targets.forEach(function (item) {
+    if (item.dataset.multiBound) return
+    item.dataset.multiBound = "1"
+    item.addEventListener("mouseenter", function () { showLines(item) })
+    item.addEventListener("mouseleave", function () { hideLines(item) })
+  })
+}
+
 document.addEventListener("nav", initNavArrow)
 document.addEventListener("render", initNavArrow)
 document.addEventListener("nav", initMarkLines)
 document.addEventListener("render", initMarkLines)
+document.addEventListener("nav", initTitleLines)
+document.addEventListener("render", initTitleLines)
 `;
 var NavArrow = () => null;
 NavArrow.afterDOMLoaded = navArrowScript;
