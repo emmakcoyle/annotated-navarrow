@@ -3869,7 +3869,7 @@ function initMarkLines() {
   letter.style.opacity = "0"
   layer.appendChild(letter)
 
-  var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+  var letterPool = "abcdefghijklmnopqrstuvwxyz".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
 
   function edgePoint(target) {
@@ -3952,10 +3952,19 @@ function initTitleLines() {
   var letterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
   var colorPool = ["#8c2f22", "#2b2e5e", "#4a7c4a", "#a63e88", "#9b8fc4", "#c99a2e", "#23555f"]
 
+  function edgeOriginPoint(rect) {
+    var side = Math.floor(Math.random() * 4)
+    var t = Math.random()
+    if (side === 0) return { x: rect.left + rect.width * t, y: rect.top }
+    if (side === 1) return { x: rect.right, y: rect.top + rect.height * t }
+    if (side === 2) return { x: rect.left + rect.width * t, y: rect.bottom }
+    return { x: rect.left, y: rect.top + rect.height * t }
+  }
+
   function nearbyPoint(cx, cy, i, count) {
     var baseAngle = (Math.PI * 2 * i) / count
     var angle = baseAngle + (Math.random() * 0.5 - 0.25)
-    var dist = 22 + Math.random() * 20
+    var dist = 50 + Math.random() * 30
     return { x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist }
   }
 
@@ -3967,8 +3976,9 @@ function initTitleLines() {
     var group = document.createElementNS("http://www.w3.org/2000/svg", "g")
 
     for (var i = 0; i < count; i++) {
-      var x1 = rect.left + rect.width * (0.15 + 0.7 * Math.random())
-      var y1 = rect.top + rect.height / 2
+      var origin = edgeOriginPoint(rect)
+      var x1 = origin.x
+      var y1 = origin.y
       var end = nearbyPoint(cx, cy, i, count)
       var midX = (x1 + end.x) / 2 + (Math.random() * 6 - 3)
       var midY = (y1 + end.y) / 2 + (Math.random() * 6 - 3)
@@ -3988,7 +3998,7 @@ function initTitleLines() {
       var angle = Math.random() * 50 - 25
       letter.textContent = chosenLetter
       letter.setAttribute("font-family", "Doodlefont, cursive")
-      letter.setAttribute("font-size", "18")
+      letter.setAttribute("font-size", "28")
       letter.setAttribute("text-anchor", "middle")
       letter.setAttribute("dominant-baseline", "middle")
       letter.setAttribute("x", String(end.x))
@@ -4042,21 +4052,26 @@ function initTitleMark() {
   var targets = document.querySelectorAll("[data-edge-multi]")
   if (targets.length === 0) return
 
-  var markPool = [
+  var underlineMarks = [
     "underline-dash-gold.png",
     "underline-thick-navy.png",
     "underline-thin-green.png",
     "underline-thin-sage.png",
     "underline-zigzag-gold.png",
-    "underline-thick-gold.png",
+    "underline-thick-gold.png"
+  ]
+
+  var overlayMarks = [
     "box-outline-green.png",
     "box-outline-lavender.png",
     "circle-oval-red.png",
     "circle-knot-red.png",
     "circle-knot-rust.png",
     "scribble-hatch-magenta.png",
-    "scribble-rust.png"
+    "scribble-hatch-rust.png"
   ]
+
+  var markPool = underlineMarks.concat(overlayMarks)
 
   function staticBase() {
     var ref = document.querySelector(".pencil-rule-mini")
@@ -4079,14 +4094,28 @@ function initTitleMark() {
     var rect = target.getBoundingClientRect()
     var base = staticBase()
     var chosen = markPool[Math.floor(Math.random() * markPool.length)]
+    var isUnderline = underlineMarks.indexOf(chosen) !== -1
     var angle = Math.random() * 8 - 4
-    var padX = rect.width * 0.08
-    var padY = rect.height * 0.35
+    var padX, top, height
+
+    if (isUnderline) {
+      padX = rect.width * 0.08
+      var padY = rect.height * 0.35
+      top = rect.top - padY
+      height = rect.height + padY * 2
+    } else {
+      padX = rect.width * 0.18
+      var padTop = rect.height * 0.75
+      var padBottom = rect.height * 0.15
+      top = rect.top - padTop
+      height = rect.height + padTop + padBottom
+    }
+
     img.src = base + chosen
     img.style.left = (rect.left - padX) + "px"
-    img.style.top = (rect.top - padY) + "px"
+    img.style.top = top + "px"
     img.style.width = (rect.width + padX * 2) + "px"
-    img.style.height = (rect.height + padY * 2) + "px"
+    img.style.height = height + "px"
     img.style.transform = "rotate(" + angle + "deg)"
     img.style.transition = "none"
     img.style.opacity = "0"
